@@ -87,6 +87,47 @@ app.post('/api/auth/login', async (req, res) => {
   res.json({ token: tokenFor(user), user: sanitizeUser(user) });
 });
 
+
+app.get('/api/roblox/user/:username', async (req, res) => {
+  const username = String(req.params.username || '').trim();
+  if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) {
+    return res.status(400).json({ error: 'Enter a valid Roblox username.' });
+  }
+  try {
+    const userResponse = await fetch('https://users.roblox.com/v1/usernames/users', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ usernames: [username], excludeBannedUsers: false })
+    });
+    if (!userResponse.ok) throw new Error('Roblox user lookup failed');
+    const userData = await userResponse.json();
+    const user = userData.data?.[0];
+    if (!user) return res.status(404).json({ error: 'Roblox account not found. Check the username and try again.' });
+
+    let avatarUrl = '';
+    try {
+      const avatarResponse = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${user.id}&size=150x150&format=Png&isCircular=false`);
+      if (avatarResponse.ok) {
+        const avatarData = await avatarResponse.json();
+        avatarUrl = avatarData.data?.[0]?.imageUrl || '';
+      }
+    } catch {}
+
+    res.json({
+      user: {
+        id: String(user.id),
+        username: user.name,
+        displayName: user.displayName || user.name,
+        avatarUrl,
+        profileUrl: `https://www.roblox.com/users/${user.id}/profile`
+      }
+    });
+  } catch (error) {
+    console.error('Roblox verification error:', error.message);
+    res.status(502).json({ error: 'Roblox verification is temporarily unavailable. Please try again.' });
+  }
+});
+
 app.get('/api/me', auth, (req, res) => {
   const user = readStore().users.find(u => u.id === req.auth.id);
   if (!user) return res.status(404).json({ error: 'User not found.' });
@@ -149,7 +190,7 @@ app.patch('/api/admin/orders/:id', auth, adminOnly, upload.single('deliveryProof
 app.get('/api/admin/settings', auth, adminOnly, (req, res) => res.json({ settings: readStore().settings }));
 app.put('/api/admin/settings', auth, adminOnly, (req, res) => {
   const store = readStore();
-  const allowed = ['shopName','tagline','announcement','contactEmail','contactPhone','facebookUrl','businessLocation','gcashName','gcashNumber','mayaName','mayaNumber','rates'];
+  const allowed = ['shopName','tagline','announcement','contactEmail','contactPhone','facebookUrl','businessLocation','gcashName','gcashNumber','mayaName','mayaNumber','gotymeName','gotymeNumber','rates'];
   for (const k of allowed) if (req.body[k] !== undefined) store.settings[k] = req.body[k];
   writeStore(store); res.json({ settings: store.settings });
 });
