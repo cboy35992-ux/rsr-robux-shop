@@ -128,6 +128,42 @@ app.get('/api/roblox/user/:username', async (req, res) => {
   }
 });
 
+
+
+app.post('/api/roblox/game/verify', async (req, res) => {
+  const gameLink = String(req.body.gameLink || '').trim();
+  const match = gameLink.match(/roblox\.com\/(?:games|share)\/(?:g\/)?(\d+)/i) || gameLink.match(/(?:placeId=|games\/)(\d+)/i);
+  const placeId = match?.[1];
+  if (!placeId) return res.status(400).json({ error: 'Enter a valid Roblox game link containing a Place ID.' });
+  try {
+    const universeResponse = await fetch(`https://apis.roblox.com/universes/v1/places/${placeId}/universe`);
+    if (!universeResponse.ok) return res.status(404).json({ error: 'Roblox game not found or unavailable.' });
+    const { universeId } = await universeResponse.json();
+    if (!universeId) return res.status(404).json({ error: 'Roblox game not found.' });
+
+    const gameResponse = await fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`);
+    if (!gameResponse.ok) throw new Error('Game details lookup failed');
+    const game = (await gameResponse.json()).data?.[0];
+    if (!game) return res.status(404).json({ error: 'Roblox game details could not be found.' });
+
+    let iconUrl = '';
+    try {
+      const iconResponse = await fetch(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${universeId}&returnPolicy=PlaceHolder&size=150x150&format=Png&isCircular=false`);
+      if (iconResponse.ok) iconUrl = (await iconResponse.json()).data?.[0]?.imageUrl || '';
+    } catch {}
+
+    res.json({ game: {
+      placeId: String(placeId), universeId: String(universeId), name: game.name,
+      description: game.description || '', creatorName: game.creator?.name || '',
+      creatorId: String(game.creator?.id || ''), iconUrl,
+      gameUrl: `https://www.roblox.com/games/${placeId}`
+    }});
+  } catch (error) {
+    console.error('Roblox game verification error:', error.message);
+    res.status(502).json({ error: 'Roblox game verification is temporarily unavailable. Please try again.' });
+  }
+});
+
 app.get('/api/me', auth, (req, res) => {
   const user = readStore().users.find(u => u.id === req.auth.id);
   if (!user) return res.status(404).json({ error: 'User not found.' });
@@ -146,12 +182,15 @@ app.post('/api/orders', auth, upload.single('receipt'), async (req, res) => {
   const amount = Number(req.body.robuxAmount);
   if (!Number.isFinite(amount) || amount < 50) return res.status(400).json({ error: 'Minimum order is 50 Robux.' });
   if (!req.file && !req.body.referenceNumber) return res.status(400).json({ error: 'Upload a receipt or enter a payment reference number.' });
+  if (req.body.method === 'gifting' && !req.body.gameDetails) return res.status(400).json({ error: 'Verify the Roblox game before submitting a gifting order.' });
   const store = readStore();
   const rate = Number(store.settings.rates[req.body.method] || 0.45);
   const order = {
     id: id('RSR'), orderNo: `RSR-${Date.now().toString().slice(-8)}`, userId: req.auth.id,
     method: req.body.method, robloxUsername: req.body.robloxUsername.trim(),
     robloxUserId: req.body.robloxUserId?.trim() || '', gamepassLinks: JSON.parse(req.body.gamepassLinks || '[]'),
+    gameLink: req.body.gameLink?.trim() || '', gameDetails: JSON.parse(req.body.gameDetails || 'null'),
+    coveredGamepassAmount: req.body.method === 'covered' ? Math.ceil(amount / 0.7) : null,
     robuxAmount: amount, totalPhp: Math.round(amount * rate * 100) / 100,
     paymentMethod: req.body.paymentMethod, referenceNumber: req.body.referenceNumber?.trim() || '',
     receiptUrl: req.file ? `/uploads/${req.file.filename}` : '', notes: req.body.notes?.trim() || '',
