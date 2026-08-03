@@ -1,37 +1,47 @@
-# RSR Robux Shop
+# RSR SHOP V15
 
-Responsive Robux ordering website with customer accounts, four checkout methods, receipt upload, order tracking and a protected admin portal.
+A deployable Node.js Robux storefront with customer checkout and a protected admin portal.
 
-## Local setup
+## V15 features
 
-```bash
-npm install
-cp .env.example .env
-npm start
-```
+- Responsive customer and admin dashboards
+- Covered Tax (`receive ÷ 0.70`) and automatic PHP calculation
+- Roblox profile, gamepass, and game verification
+- GCash and GoTyme QR payment flow
+- Receipt upload and reference number
+- Order tracking with Pending, Processing, Completed, Declined and delivery proof
+- Customer/admin live chat
+- Tutorial and approved-vouch wall
+- Promo codes and automatic discount calculation
+- Method availability, stock, minimum and maximum controls
+- Maintenance mode
+- Staff account creation
+- Activity logs and CSV order export
+- Discord new-order webhook support
 
-Open `http://localhost:3000`.
+## Render
 
-## Render deployment
+- Root Directory: `rsr-robux-shop` only when this project is inside that folder; otherwise leave blank
+- Build Command: `npm install`
+- Start Command: `npm start`
 
-- Runtime: Node
-- Build command: `npm install`
-- Start command: `npm start`
-- Root directory: leave blank
-
-Required environment variables:
-
-- `NODE_ENV=production`
-- `JWT_SECRET` — generate a long random secret
-- `ADMIN_EMAIL` — admin login email
-- `ADMIN_PASSWORD` — admin login password
-
-Optional environment variables are documented in `.env.example`.
-
-## Admin portal
-
-The admin uses the same login screen. Sign in with `ADMIN_EMAIL` and `ADMIN_PASSWORD`. Admin accounts receive a different dashboard with order management and shop settings.
+Required variables: `NODE_ENV=production`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`. Optional: `SHOP_NAME`, contact variables and `DISCORD_WEBHOOK_URL`.
 
 ## Important production note
 
-This starter stores data in `data/store.json` and receipt images in `public/uploads`. Render's default filesystem is ephemeral, so data can reset after a redeploy or restart. Before accepting real customer payments, connect a persistent database and cloud image storage. Do not use this demo storage as the final production system.
+This package uses a JSON file and local uploads so it is easy to deploy and test. Render's free filesystem is temporary. Before accepting real payments, move data to PostgreSQL/MongoDB and receipts to Cloudinary/S3. Do not present sample vouches as real customer proof; publish only genuine, approved reviews.
+
+
+## V15.1 additions
+
+- Prominent floating customer-to-admin support chat on every customer page.
+- Dedicated **Legit & Vouches** center in the customer navigation.
+- Approved-vouch wall, shop guarantees, official Facebook link, and trust statistics.
+- Customer vouch submission with admin approval.
+- **Gifting In-Game Support** button inside the gifting checkout.
+- The gifting support chat carries game/account context to the admin.
+- Admin can reply from **Customer Chats** and complete or decline orders from **Manage Orders**.
+
+### Important Roblox limitation
+
+The included “Gifting In-Game Support” is a website chat used while coordinating an in-game delivery. A website cannot directly read or write Roblox in-game chat without a separate Roblox Studio server script and a secure external relay. Never send Roblox passwords, cookies, or account security codes through chat.
