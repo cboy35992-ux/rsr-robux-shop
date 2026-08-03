@@ -1,0 +1,44 @@
+{
+  "users": [],
+  "orders": [],
+  "settings": {
+    "shopName": "RSR SHOP",
+    "tagline": "Fast \u2022 Secure \u2022 Trusted Robux Marketplace",
+    "announcement": "Orders are manually reviewed for your safety.",
+    "contactEmail": "reckshopemergencycontact@gmail.com",
+    "contactPhone": "09121656529",
+    "facebookUrl": "https://www.facebook.com/profile.php?id=61592736479803",
+    "businessLocation": "Philippines",
+    "gcashName": "RSR SHOP",
+    "gcashNumber": "09XX XXX XXXX",
+    "mayaName": "RSR SHOP",
+    "mayaNumber": "09XX XXX XXXX",
+    "rates": {
+      "covered": 0.4,
+      "notCovered": 0.55,
+      "instant": 0.45,
+      "gifting": 0.48
+    },
+    "gotymeName": "CA******A MA**E A.",
+    "gotymeNumber": "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022 3952",
+    "tutorialVideoUrl": "",
+    "vouches": [
+      {
+        "name": "Verified Buyer",
+        "text": "Fast transaction and clear updates. My order was completed safely.",
+        "rating": 5
+      },
+      {
+        "name": "Repeat Customer",
+        "text": "The username verification made the order easy and prevented mistakes.",
+        "rating": 5
+      },
+      {
+        "name": "RSR Customer",
+        "text": "Payment was reviewed and I received proof after delivery.",
+        "rating": 5
+      }
+    ]
+  },
+  "messages": []
+}
