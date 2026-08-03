@@ -1,6 +1,6 @@
 {
   "name": "rsr-robux-shop",
-  "version": "15.0.0",
+  "version": "15.2.0",
   "private": true,
   "description": "RSR SHOP V15 \u2014 responsive Robux storefront, verified checkout, live support, and full admin portal",
   "main": "server.js",

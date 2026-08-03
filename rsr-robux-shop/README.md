@@ -45,3 +45,10 @@ This package uses a JSON file and local uploads so it is easy to deploy and test
 ### Important Roblox limitation
 
 The included “Gifting In-Game Support” is a website chat used while coordinating an in-game delivery. A website cannot directly read or write Roblox in-game chat without a separate Roblox Studio server script and a secure external relay. Never send Roblox passwords, cookies, or account security codes through chat.
+
+
+## V15.2 fixes
+- Order method cards are real clickable buttons and advance immediately to Order Details.
+- Customer and admin full chat refresh every second.
+- Floating customer chat also refreshes every second while open, so admin replies appear without reopening it.
+- Static asset cache-busting added for deployment updates.

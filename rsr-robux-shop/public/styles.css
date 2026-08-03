@@ -32,3 +32,6 @@
 .guarantee-list li{display:grid;gap:4px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#0d0a16}.guarantee-list span{color:var(--muted);font-size:12px;line-height:1.5}
 @media(max-width:900px){.trust-stats{grid-template-columns:repeat(2,1fr)}.legit-hero{grid-template-columns:1fr}.trust-seal{display:none}}
 @media(max-width:600px){.support-fab{right:16px;bottom:16px}.support-drawer{right:12px;bottom:86px}.trust-stats{grid-template-columns:1fr}.gifting-support{align-items:flex-start;flex-direction:column}.gifting-support .btn{width:100%}}
+
+/* V15.2 clickable method cards */
+.method-card{width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer;position:relative;min-height:178px;display:block;appearance:none;-webkit-appearance:none;transition:transform .18s,border-color .18s,box-shadow .18s;background:linear-gradient(145deg,rgba(23,18,37,.95),rgba(13,10,23,.95))}.method-card:hover{transform:translateY(-3px);border-color:#7053a3}.method-card.selected{border-color:#9b70ff;box-shadow:0 0 0 2px #8b5cf655,0 18px 50px #7c3aed2e}.method-card b{display:block;margin-top:14px;color:#c5a9ff}.method-card:focus-visible{outline:3px solid #b995ff;outline-offset:3px}
