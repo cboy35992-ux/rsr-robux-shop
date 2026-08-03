@@ -38,7 +38,49 @@
         "text": "Payment was reviewed and I received proof after delivery.",
         "rating": 5
       }
-    ]
+    ],
+    "version": "V15",
+    "maintenanceMode": false,
+    "methods": {
+      "covered": {
+        "enabled": true,
+        "stock": 250000,
+        "min": 50,
+        "max": 100000
+      },
+      "notCovered": {
+        "enabled": true,
+        "stock": 250000,
+        "min": 50,
+        "max": 100000
+      },
+      "instant": {
+        "enabled": true,
+        "stock": 50000,
+        "min": 50,
+        "max": 5000
+      },
+      "gifting": {
+        "enabled": true,
+        "stock": 100000,
+        "min": 50,
+        "max": 50000
+      }
+    },
+    "promoCodes": [
+      {
+        "code": "WELCOME",
+        "type": "percent",
+        "value": 3,
+        "maxDiscount": 100,
+        "active": true,
+        "uses": 0
+      }
+    ],
+    "referralReward": 0,
+    "supportStatus": "Online"
   },
-  "messages": []
+  "messages": [],
+  "activityLogs": [],
+  "vouchSubmissions": []
 }
