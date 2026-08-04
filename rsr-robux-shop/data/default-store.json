@@ -67,16 +67,6 @@
         "max": 50000
       }
     },
-    "promoCodes": [
-      {
-        "code": "WELCOME",
-        "type": "percent",
-        "value": 3,
-        "maxDiscount": 100,
-        "active": true,
-        "uses": 0
-      }
-    ],
     "referralReward": 0,
     "supportStatus": "Online"
   },

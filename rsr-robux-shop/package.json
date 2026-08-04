@@ -1,8 +1,8 @@
 {
   "name": "rsr-robux-shop",
-  "version": "16.0.0",
+  "version": "18.0.0",
   "private": true,
-  "description": "RSR SHOP V16 \u2014 secure checkpoint-based admin order review, verified checkout, live support, and trust center",
+  "description": "RSR SHOP V18 \u2014 streamlined professional order management, receipt verification, responsive PWA, live support, and trust center",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
