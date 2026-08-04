@@ -1,32 +1,5 @@
-# RSR SHOP V15
-
-A deployable Node.js Robux storefront with customer checkout and a protected admin portal.
-
-## V15 features
-
-- Responsive customer and admin dashboards
-- Covered Tax (`receive ÷ 0.70`) and automatic PHP calculation
-- Roblox profile, gamepass, and game verification
-- GCash and GoTyme QR payment flow
-- Receipt upload and reference number
-- Order tracking with Pending, Processing, Completed, Declined and delivery proof
-- Customer/admin live chat
-- Tutorial and approved-vouch wall
-- Promo codes and automatic discount calculation
-- Method availability, stock, minimum and maximum controls
-- Maintenance mode
-- Staff account creation
-- Activity logs and CSV order export
-- Discord new-order webhook support
-
-## Render
-
-- Root Directory: `rsr-robux-shop` only when this project is inside that folder; otherwise leave blank
-- Build Command: `npm install`
-- Start Command: `npm start`
-
-Required variables: `NODE_ENV=production`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`. Optional: `SHOP_NAME`, contact variables and `DISCORD_WEBHOOK_URL`.
-
-## Important production note
-
-This package uses a JSON file and local uploads so it is easy to deploy and test. Render's free filesystem is temporary. Before accepting real payments, move data to PostgreSQL/MongoDB and receipts to Cloudinary/S3. Do not present sample vouches as real customer proof; publish only genuine, approved reviews.
+const CACHE='rsr-shop-v18-3-static-1';
+const STATIC=['/','/index.html','/styles.css?v=18.3','/app.js?v=18.3','/manifest.webmanifest','/offline.html','/icon-192.png','/icon-512.png','/assets/gcash-qr.png','/assets/gotyme-qr.png'];
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',event=>{const req=event.request;if(req.method!=='GET')return;const url=new URL(req.url);if(url.origin!==location.origin)return;if(url.pathname.startsWith('/api/')||url.pathname.startsWith('/uploads/')){event.respondWith(fetch(req));return;}if(req.mode==='navigate'){event.respondWith(fetch(req).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put('/index.html',copy));return r}).catch(()=>caches.match('/index.html').then(r=>r||caches.match('/offline.html'))));return;}event.respondWith(caches.match(req).then(cached=>cached||fetch(req).then(r=>{if(r.ok){const copy=r.clone();caches.open(CACHE).then(c=>c.put(req,copy))}return r})));});
