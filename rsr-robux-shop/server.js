@@ -229,7 +229,10 @@ app.post('/api/orders', auth, upload.single('receipt'), async (req, res) => {
     robuxAmount: amount, subtotalPhp: calc.subtotal, discountPhp: calc.discount, promoCode: calc.promo?.code||'', totalPhp: calc.totalPhp,
     paymentMethod: req.body.paymentMethod, referenceNumber: req.body.referenceNumber?.trim() || '',
     receiptUrl: req.file ? `/uploads/${req.file.filename}` : '', notes: req.body.notes?.trim() || '',
-    status: 'Pending Review', adminNote: '', deliveryProofUrl: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+    status: 'Pending Review', adminNote: '', deliveryProofUrl: '',
+    verification: { account:false, method:false, payment:false, stock:false, delivery:false },
+    verificationLog: [{ step:'Order submitted', result:'Pending', actorName:'Customer', createdAt:new Date().toISOString() }],
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
   };
   store.orders.push(order); if(calc.promo) calc.promo.uses=Number(calc.promo.uses||0)+1; if(methodSettings) methodSettings.stock=Math.max(0,Number(methodSettings.stock||0)-amount); logActivity(store,store.users.find(u=>u.id===req.auth.id),'Created order',order.orderNo); writeStore(store);
   if (process.env.DISCORD_WEBHOOK_URL) {
@@ -280,11 +283,53 @@ app.patch('/api/admin/orders/:id', auth, adminOnly, upload.single('deliveryProof
   const store = readStore();
   const order = store.orders.find(o => o.id === req.params.id);
   if (!order) return res.status(404).json({ error: 'Order not found.' });
-  if (req.body.status) { const allowedStatuses = ['Pending Review','Payment Verified','Processing','Completed','Declined','Cancelled']; if (!allowedStatuses.includes(req.body.status)) return res.status(400).json({ error: 'Invalid order status.' }); order.status = req.body.status; }
-  if (req.body.adminNote !== undefined) order.adminNote = req.body.adminNote;
-  if (req.file) order.deliveryProofUrl = `/uploads/${req.file.filename}`;
-  order.updatedAt = new Date().toISOString(); logActivity(store,store.users.find(u=>u.id===req.auth.id),`Order ${order.status}`,order.orderNo); writeStore(store);
-  res.json({ order });
+  const actor = store.users.find(u=>u.id===req.auth.id);
+  order.verification ||= { account:false, method:false, payment:false, stock:false, delivery:false };
+  order.verificationLog ||= [];
+  const record = (step, result='Verified', details='') => order.verificationLog.push({ id:id('chk'), step, result, details, actorId:actor?.id||'', actorName:actor?.name||'Administrator', createdAt:new Date().toISOString() });
+  const action = String(req.body.action || '').trim();
+  const adminNote = String(req.body.adminNote || '').trim();
+
+  if (action === 'verifyAccount') {
+    if (!order.robloxUserId || !order.robloxUsername) return res.status(400).json({ error:'This order has no verified Roblox account data.' });
+    order.verification.account = true; record('Roblox account', 'Verified', `${order.robloxUsername} (${order.robloxUserId})`);
+  } else if (action === 'verifyMethod') {
+    if (['covered','notCovered'].includes(order.method)) {
+      const expected = order.method === 'covered' ? Number(order.coveredGamepassAmount) : Number(order.robuxAmount);
+      const actual = Number(order.gamepassDetails?.totalPrice || 0);
+      if (!actual || actual !== expected) return res.status(400).json({ error:`Gamepass total must exactly match R$ ${expected.toLocaleString()}. Current verified total: R$ ${actual.toLocaleString()}.` });
+    }
+    if (order.method === 'gifting' && !order.gameDetails?.placeId) return res.status(400).json({ error:'The gifting game has not been verified.' });
+    order.verification.method = true; record('Method requirements', 'Verified', order.method);
+  } else if (action === 'verifyPayment') {
+    if (!order.receiptUrl && !order.referenceNumber) return res.status(400).json({ error:'Payment proof or reference number is missing.' });
+    if (adminNote.length < 4) return res.status(400).json({ error:'Add a short payment verification note, such as “Reference matched”.' });
+    order.verification.payment = true; order.adminNote = adminNote; order.status = 'Payment Verified'; record('Payment', 'Verified', adminNote);
+  } else if (action === 'verifyStock') {
+    const methodSettings=store.settings.methods?.[order.method];
+    if (methodSettings && !methodSettings.enabled) return res.status(400).json({ error:'This method is currently disabled.' });
+    order.verification.stock = true; record('Stock and availability', 'Verified', `${order.robuxAmount} Robux reserved`);
+  } else if (action === 'startProcessing') {
+    const required=['account','method','payment','stock'];
+    const missing=required.filter(k=>!order.verification[k]);
+    if(missing.length) return res.status(400).json({ error:`Complete these checks first: ${missing.join(', ')}.` });
+    order.status='Processing'; if(adminNote)order.adminNote=adminNote; record('Processing authorization','Approved',adminNote||'All required checks passed');
+  } else if (action === 'complete') {
+    if(order.status!=='Processing') return res.status(400).json({ error:'Order must be Processing before it can be completed.' });
+    if(req.file) order.deliveryProofUrl=`/uploads/${req.file.filename}`;
+    if(!order.deliveryProofUrl) return res.status(400).json({ error:'Upload delivery proof before completing the order.' });
+    if(String(req.body.confirmation||'').trim().toUpperCase()!=='COMPLETE') return res.status(400).json({ error:'Type COMPLETE in the confirmation field.' });
+    order.verification.delivery=true; order.status='Completed'; if(adminNote)order.adminNote=adminNote; record('Delivery proof','Verified',order.deliveryProofUrl); record('Final completion','Approved',adminNote||'Order completed');
+  } else if (action === 'decline') {
+    if(adminNote.length<10) return res.status(400).json({ error:'Enter a clear decline reason with at least 10 characters.' });
+    if(String(req.body.confirmation||'').trim().toUpperCase()!=='DECLINE') return res.status(400).json({ error:'Type DECLINE in the confirmation field.' });
+    order.adminNote=adminNote; order.status='Declined'; record('Order declined','Declined',adminNote);
+  } else {
+    return res.status(400).json({ error:'Choose a valid verification action.' });
+  }
+  order.updatedAt = new Date().toISOString();
+  logActivity(store,actor,`${action} — ${order.orderNo}`,adminNote);
+  writeStore(store); res.json({ order });
 });
 
 app.get('/api/admin/settings', auth, adminOnly, (req, res) => res.json({ settings: readStore().settings }));

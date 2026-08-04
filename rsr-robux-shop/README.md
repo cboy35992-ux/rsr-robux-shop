@@ -52,3 +52,16 @@ The included “Gifting In-Game Support” is a website chat used while coordina
 - Customer and admin full chat refresh every second.
 - Floating customer chat also refreshes every second while open, so admin replies appear without reopening it.
 - Static asset cache-busting added for deployment updates.
+
+## V16 secure admin order workflow
+
+Admin orders can no longer be completed directly. Each order must pass these checkpoints:
+
+1. Roblox account verification
+2. Method/gamepass or gifting game verification
+3. Payment proof verification with an admin note
+4. Stock and availability verification
+5. Processing authorization
+6. Delivery proof upload and typed `COMPLETE` confirmation
+
+Declining an order requires a clear reason and typed `DECLINE` confirmation. Every checkpoint creates an audit-trail entry with the staff member and timestamp.
