@@ -1,0 +1,21 @@
+{
+  "name": "RSR Shop",
+  "short_name": "RSR Shop",
+  "description": "Secure Robux ordering, order tracking, live support, and admin management.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#080612",
+  "theme_color": "#7c3aed",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {"src":"/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ],
+  "shortcuts": [
+    {"name":"New Order","short_name":"Order","url":"/?open=order","icons":[{"src":"/icon-192.png","sizes":"192x192"}]},
+    {"name":"Live Support","short_name":"Support","url":"/?open=chat","icons":[{"src":"/icon-192.png","sizes":"192x192"}]}
+  ]
+}
