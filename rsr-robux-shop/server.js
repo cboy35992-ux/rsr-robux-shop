@@ -58,15 +58,25 @@ app.use(express.static(path.join(ROOT, 'public')));
 
 function ensureAdmin() {
   const store = readStore();
-  const email = (process.env.ADMIN_EMAIL || 'admin@rsrshop.com').toLowerCase();
-  if (!store.users.some(u => u.role === 'admin')) {
-    store.users.push({
+  const email = String(process.env.ADMIN_EMAIL || 'admin@rsrshop.com').trim().toLowerCase();
+  const password = String(process.env.ADMIN_PASSWORD || 'Admin123!');
+  let admin = store.users.find(u => u.role === 'admin');
+
+  if (!admin) {
+    admin = {
       id: id('usr'), name: 'RSR Administrator', email,
-      passwordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'Admin123!', 10),
+      passwordHash: bcrypt.hashSync(password, 10),
       role: 'admin', createdAt: new Date().toISOString()
-    });
-    writeStore(store);
+    };
+    store.users.push(admin);
+  } else {
+    admin.email = email;
+    admin.passwordHash = bcrypt.hashSync(password, 10);
+    admin.name ||= 'RSR Administrator';
   }
+
+  store.users = store.users.filter(u => u.id === admin.id || u.email.toLowerCase() !== email);
+  writeStore(store);
 }
 ensureAdmin();
 

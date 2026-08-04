@@ -78,3 +78,10 @@ Responsive layouts are included for phones, tablets, laptops, desktops, safe-are
 - A clear receipt image is required for every order; a payment reference number is not required.
 - Admin workflow is streamlined to Verify Receipt → Processing → Complete, with Decline available at any time before completion.
 - Processing is blocked until the receipt is verified, and completion is blocked until the order is processing.
+
+
+## V18.1 login fix
+- Sign In and Create Account are now separate visible tabs.
+- An already-registered email automatically returns the user to Sign In.
+- The admin account synchronizes with `ADMIN_EMAIL` and `ADMIN_PASSWORD` on every startup.
+- Static cache version was bumped to prevent the old login screen from remaining installed.
